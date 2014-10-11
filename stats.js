@@ -209,13 +209,13 @@ $(function() {
             ], {
                 colors: ['#00A8F0', '#C0D800', '#CB4B4B'],
                 xaxis: {
-                    title: '1 - Specificity',
+                    title: '1 - Spec',
                     tickDecimals: 2,
                     min: 0,
                     max: 1,
                 },
                 yaxis: {
-                    title: 'Sensitivity',
+                    title: 'Sens',
                     tickDecimals: 2,
                     min: 0,
                     max: 1,
