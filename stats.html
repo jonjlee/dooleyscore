@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dooley Score for Clinical Breast Exams</title>
+
+    <link href="static/thirdparty/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/thirdparty/bootstrap-slider/bootstrap-slider.min.css" rel="stylesheet">
+    <link href="stats.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="section-title">Select Datasets</li>
+            <li class="section">
+                <div id="datasets" class="btn-group-vertical" data-toggle="buttons">
+                </div>
+            </li>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li class="section-title">Dooley Score</li>
+            <li class="section">
+                <div>Threshold:</div>
+                <input class="" id="threshold" data-slider-id='threshold-slider' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="4"/>
+            </li>
+          </ul>
+        </div>
+        <div class="col-md-10 col-md-offset-2 main">
+            <!-- <h2 class="sub-header">Summary</h2> -->
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Outcomes</h4>
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          <th>Cancer</th>
+                          <th>No Cancer</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <th>Score &ge; <span class="outcome-threshold">x</span></th>
+                          <td><span id="true-pos"></span></td>
+                          <td><span id="false-pos"></span></td>
+                          <th>Total: <span id="outcome-ttl-row-1">a+b</span></th>
+                        </tr>
+                        <tr>
+                          <th>Score &lt; <span class="outcome-threshold">x</span></th>
+                          <td><span id="false-neg"></span></td>
+                          <td><span id="true-neg"></span></td>
+                          <th>Total: <span id="outcome-ttl-row-2">c+d</span></th>
+                        </tr>
+                        <tr>
+                          <th></th>
+                          <th>Total: <span id="outcome-ttl-col-1">a+c</span></th>
+                          <th>Total: <span id="outcome-ttl-col-2">b+d</span></th>
+                          <th></th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="spacer"></div>
+
+                    <h4>Calculations</h4>
+                    <table id="params" class="table table-striped table-bordered">
+                        <tr>
+                          <th class="shrink">Number of samples</th>
+                          <td class="expand"><span id="n"></span></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Sensitivity</th>
+                          <td class="expand"><span id="sensitivity"></span></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Specifity</th>
+                          <td class="expand"><span id="specificity"></span></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">PPV</th>
+                          <td class="expand"><span id="ppv"></span></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">NPV</th>
+                          <td class="expand"><span id="npv"></span></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Accuracy</th>
+                          <td class="expand"><span id="accuracy"></span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h4>Dooley Score:</h4>
+                    <div id="graph1" class="graph"></div>
+                    <h4>BIRADS Score:</h4>
+                    <div id="graph2" class="graph"></div>
+                </div>
+            </div>
+
+            <!--
+            <h2 class="sub-header">Details</h2>
+            <div class="row"> </div>
+            -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Templates -->
+    <script id="dataset-template" type="text/template">
+        <label id="<%= id %>" class="dataset btn btn-sm btn-default active">
+            <input type="checkbox" checked><%= name %></input>
+        </label>
+    </script>
+
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="static/thirdparty/jquery.min.js"></script>
+    <script src="static/thirdparty/bootstrap/js/bootstrap.min.js"></script>
+    <script src="static/thirdparty/bootstrap-slider/bootstrap-slider.min.js"></script>
+    <script src="static/thirdparty/flotr2.min.js"></script>
+    <script src="data.js"></script>
+    <script src="stats.js"></script>
+  </body>
+</html>
