@@ -2,7 +2,7 @@ $(function() {
     function init() {
         // Add dataset button for each dataset
         var $datasets = $('#datasets'),
-            avail = ['Nipple Discharge', 'Breast Pain']; //Object.keys(data).sort();
+            avail = Object.keys(data).sort(); //['Nipple Discharge', 'Breast Pain']; //
         _.each(avail, function(datasetName, idx) {
             var tpl = _.template($('#dataset-template').html()),
                 id = 'dataset-' + idx;

@@ -23,13 +23,13 @@ AllSheetInfo = {
         dataset_name='Abnormal Mammography',
         sheet_name='Mammography',
         start_row=2,
-        columns=['Last name', 'First name', 'Sex', 'Birthdate', 'SSN', 'Notes', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Pt ID', 'BIRADS', 'Density/distortion', 'Calcifications', 'Diagnosis', 'CC']
+        columns=['Last name', 'First name', 'Sex', 'Birthdate', 'SSN', 'Notes', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Pt ID', 'BIRADS', 'Density/distortion', 'Calcifications', 'Diagnosis', 'Cancer', 'CC']
     ),
     'Br Mass': SheetInfo(
         dataset_name='Breast Mass',
         sheet_name='Br Mass',
         start_row=2,
-        columns=['Last Name', 'First Name', 'Birthdate', 'Mass Found By', 'Mass Characterization by PennyPacker Exam', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Patient ID', 'MR Number', 'SSN', 'PreOp Diagnosis', 'PostOp Diagnosis']
+        columns=['Last Name', 'First Name', 'Birthdate', 'Mass Found By', 'Mass Characterization by PennyPacker Exam', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Patient ID', 'MR Number', 'SSN', 'PreOp Diagnosis', 'PostOp Diagnosis', 'Dx', 'Cancer']
     ),
     'Breast Pain': SheetInfo(
         dataset_name='Breast Pain',
