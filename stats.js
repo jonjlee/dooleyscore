@@ -67,8 +67,11 @@ $(function() {
             ppv = a / (a+b),
             npv = d / (d+c),
             accuracy = (a+d) / (a+b+c+d);
+        if (isNaN(sensitivity)) { sensitivity = 0; }
+        if (isNaN(specificity)) { specificity = 0; }
         if (isNaN(ppv)) { ppv = 0; }
         if (isNaN(npv)) { npv = 0; }
+        if (isNaN(accuracy)) { accuracy = 0; }
         $('#n').text(activedata.length);
         $('#sensitivity').text(sensitivity.toFixed(2));
         $('#specificity').text(specificity.toFixed(2));
