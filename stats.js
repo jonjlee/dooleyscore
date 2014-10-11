@@ -35,8 +35,9 @@ $(function() {
             activedata = activedata.concat(subset.data);
         });
         activedata = filterCancerDefined(activedata);
+        $('#n').text(activedata.length);
 
-        // Update outcomes table
+        // Update Dooley Score outcomes table
         var threshold = parseInt($('#threshold').val());
         var cancer = filterCancer(activedata),
             nocancer = filterNoCancer(activedata),
@@ -61,7 +62,7 @@ $(function() {
         $('#false-neg').text(c);
         $('#true-neg').text(d);
 
-        // Update calculations
+        // Update Dooley Score calculations
         var sensitivity = a / (a+c),
             specificity = d / (b+d),
             ppv = a / (a+b),
@@ -72,12 +73,39 @@ $(function() {
         if (isNaN(ppv)) { ppv = 0; }
         if (isNaN(npv)) { npv = 0; }
         if (isNaN(accuracy)) { accuracy = 0; }
-        $('#n').text(activedata.length);
         $('#sensitivity').text(sensitivity.toFixed(2));
         $('#specificity').text(specificity.toFixed(2));
         $('#ppv').text(ppv.toFixed(2));
         $('#npv').text(npv.toFixed(2));
         $('#accuracy').text(accuracy.toFixed(2));
+
+        // Update BIRADS calculations
+        threshold = 4;
+        gethreshold = filterBIRADSGeThreshold(activedata, threshold);
+        ltthreshold = filterBIRADSLtThreshold(activedata, threshold);
+        truepos = filterBIRADSGeThreshold(cancer, threshold);
+        falsepos = filterBIRADSGeThreshold(nocancer, threshold);
+        falseneg = filterBIRADSLtThreshold(cancer, threshold);
+        trueneg = filterBIRADSLtThreshold(nocancer, threshold);
+        a = truepos.length;
+        b = falsepos.length;
+        c = falseneg.length;
+        d = trueneg.length;
+        sensitivity = a / (a+c);
+        specificity = d / (b+d);
+        ppv = a / (a+b);
+        npv = d / (d+c);
+        accuracy = (a+d) / (a+b+c+d);
+        if (isNaN(sensitivity)) { sensitivity = 0; }
+        if (isNaN(specificity)) { specificity = 0; }
+        if (isNaN(ppv)) { ppv = 0; }
+        if (isNaN(npv)) { npv = 0; }
+        if (isNaN(accuracy)) { accuracy = 0; }
+        $('#birads-sensitivity').text(sensitivity.toFixed(2));
+        $('#birads-specificity').text(specificity.toFixed(2));
+        $('#birads-ppv').text(ppv.toFixed(2));
+        $('#birads-npv').text(npv.toFixed(2));
+        $('#birads-accuracy').text(accuracy.toFixed(2));
 
         // Update Dooley score graph
         var i,
@@ -172,6 +200,8 @@ $(function() {
     function filterDooleyGeThreshold(data, threshold) { return _.filter(data, function(e) { return e.total >= threshold; }); }
     function filterDooleyLtThreshold(data, threshold) { return _.filter(data, function(e) { return e.total < threshold; }); }
     function countByDooleyScore(data, score) { return _.filter(data, function(e) { return e.total == score; }).length; }
+    function filterBIRADSGeThreshold(data, threshold) { return _.filter(data, function(e) { return e.birads >= threshold; }); }
+    function filterBIRADSLtThreshold(data, threshold) { return _.filter(data, function(e) { return e.birads < threshold; }); }
     function countByBIRADS(data, score) { return _.filter(data, function(e) { return e.birads === score; }).length; }
 
     init();

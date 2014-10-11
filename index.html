@@ -64,18 +64,14 @@
                           <th></th>
                           <th>Total: <span id="outcome-ttl-col-1">a+c</span></th>
                           <th>Total: <span id="outcome-ttl-col-2">b+d</span></th>
-                          <th></th>
+                          <th>n = <span id="n">n</span></th>
                         </tr>
                       </tbody>
                     </table>
                     <div class="spacer"></div>
 
-                    <h4>Calculations</h4>
+                    <h4>Dooley Score Calculations</h4>
                     <table id="params" class="table table-striped table-bordered">
-                        <tr>
-                          <th class="shrink">Number of samples</th>
-                          <td class="expand"><span id="n"></span></td>
-                        </tr>
                         <tr>
                           <th class="shrink">Sensitivity</th>
                           <td class="expand"><span id="sensitivity"></span></td>
@@ -95,6 +91,31 @@
                         <tr>
                           <th class="shrink">Accuracy</th>
                           <td class="expand"><span id="accuracy"></span></td>
+                        </tr>
+                    </table>
+                    <div class="spacer"></div>
+
+                    <h4>BIRADS Calculations</h4>
+                    <table id="params" class="table table-striped table-bordered">
+                        <tr>
+                          <th class="shrink">Sensitivity</th>
+                          <td class="expand"><span id="birads-sensitivity"></span></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Specifity</th>
+                          <td class="expand"><span id="birads-specificity"></span></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">PPV</th>
+                          <td class="expand"><span id="birads-ppv"></span></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">NPV</th>
+                          <td class="expand"><span id="birads-npv"></span></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Accuracy</th>
+                          <td class="expand"><span id="birads-accuracy"></span></td>
                         </tr>
                     </table>
                 </div>
