@@ -79,6 +79,12 @@
                           <th>Combined</th>
                         </tr>
                         <tr>
+                          <th class="shrink">Samples (n)</th>
+                          <td class=""><span id="samples"></span></td>
+                          <td class=""><span id="birads-samples"></span></td>
+                          <td class=""><span id="combined-samples"></span></td>
+                        </tr>
+                        <tr>
                           <th class="shrink">Sensitivity</th>
                           <td class=""><span id="sensitivity"></span></td>
                           <td class=""><span id="birads-sensitivity"></span></td>
@@ -111,10 +117,14 @@
                     </table>
                 </div>
                 <div class="col-md-6">
-                    <h4>Dooley Score:</h4>
+                    <h4>Dooley Score vs # Samples:</h4>
                     <div id="graph1" class="graph"></div>
-                    <h4>BIRADS Score:</h4>
+                    <h4>BIRADS Score vs # Samples:</h4>
                     <div id="graph2" class="graph"></div>
+                    <h4>Dooley Score ROC</h4>
+                    <div id="graph3" class="graph"></div>
+                    <h4>Combined ROC</h4>
+                    <div id="graph4" class="graph"></div>
                 </div>
             </div>
 

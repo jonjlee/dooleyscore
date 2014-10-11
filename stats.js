@@ -13,7 +13,7 @@ $(function() {
             $('#' + id).click(function() { 
                 // Manually update active class so it will be set on refresh()
                 $(this).toggleClass('active');
-                refresh(); 
+                refreshStats();
 
                 // Bypass default bootstrap handler
                 return false;
@@ -25,42 +25,64 @@ $(function() {
         $("#threshold").on("slide", function(e) { refresh(); });
     }
 
-    function refresh() {
+    function refreshStats() {
+        activedata = [];
+        activestats = {};
+
         // Update dataset
         var active = $('.dataset.active');
-        activedata = [];
         active.each(function(idx, e) {
             var name = $(e).text().trim(),
                 subset = datasetByName(name);
             activedata = activedata.concat(subset.data);
         });
         activedata = filterCancerDefined(activedata);
-        $('#n').text(activedata.length);
 
         // Calculate all stats
-        var threshold = parseInt($('#threshold').val());
         var cancer = filterCancer(activedata),
             nocancer = filterNoCancer(activedata);
-        var dooleyStats = calcStats(
-                cancer, 
-                nocancer,
-                function(e) { return e.total >= threshold; },
-                function(e) { return e.total < threshold; }),
-            BIRADSStats = calcStats(
-                cancer,
-                nocancer,
-                function(e) { return e.birads >= 4; },
-                function(e) { return e.birads < 4; })
-            combinedStats = calcStats(
-                cancer,
-                nocancer,
-                function(e) { return (e.total >= threshold) || (e.birads >= 4); },
-                function(e) { return (e.total < threshold) && (e.birads < 4); });
+        for (threshold = 0; threshold <= 12; threshold++) {
+            activestats[threshold] = {
+                dooley: calcStats(
+                    cancer, 
+                    nocancer,
+                    function(e) { return _.isNumber(e.total) && (e.total >= threshold); },
+                    function(e) { return _.isNumber(e.total) && (e.total < threshold); }),
+                birads: calcStats(
+                    cancer,
+                    nocancer,
+                    function(e) { return _.isNumber(e.birads) && (e.birads >= 4); },
+                    function(e) { return _.isNumber(e.birads) && (e.birads < 4); }),
+                combined: calcStats(
+                    cancer,
+                    nocancer,
+                    function(e) { return _.isNumber(e.total) && _.isNumber(e.birads) && ((e.total >= threshold) || (e.birads >= 4)); },
+                    function(e) { return _.isNumber(e.total) && _.isNumber(e.birads) && ((e.total < threshold) && (e.birads < 4)); }),
+            }
+        }
+
+        // Update UI
+        refresh();
+    }
+
+    // Refreshes the UI based on activedata and activestats, both calculated
+    // in refreshStats()
+    function refresh() {
+        // Update number of samples
+        $('#n').text(activedata.length);
+
+        // Retrieve current stats
+        var threshold = parseInt($('#threshold').val()),
+            cancer = filterCancer(activedata),
+            nocancer = filterNoCancer(activedata),
+            dooleyStats = activestats[threshold].dooley,
+            biradsStats = activestats[threshold].birads,
+            combinedStats = activestats[threshold].combined;
 
         // Update Dooley Score outcomes table
         $('.outcome-threshold').text(threshold);
-        $('#outcome-ttl-col-1').text(cancer.length);
-        $('#outcome-ttl-col-2').text(nocancer.length);
+        $('#outcome-ttl-col-1').text(dooleyStats.n_disease);
+        $('#outcome-ttl-col-2').text(dooleyStats.n_nodisease);
         $('#outcome-ttl-row-1').text(dooleyStats.a + dooleyStats.c);
         $('#outcome-ttl-row-2').text(dooleyStats.b + dooleyStats.d);
         $('#true-pos').text(dooleyStats.a);
@@ -69,6 +91,7 @@ $(function() {
         $('#true-neg').text(dooleyStats.d);
 
         // Dooley Score results
+        $('#samples').text(dooleyStats.n);
         $('#sensitivity').text(dooleyStats.sensitivity);
         $('#specificity').text(dooleyStats.specificity);
         $('#ppv').text(dooleyStats.ppv);
@@ -76,13 +99,15 @@ $(function() {
         $('#accuracy').text(dooleyStats.accuracy);
 
         // BIRADS results
-        $('#birads-sensitivity').text(BIRADSStats.sensitivity);
-        $('#birads-specificity').text(BIRADSStats.specificity);
-        $('#birads-ppv').text(BIRADSStats.ppv);
-        $('#birads-npv').text(BIRADSStats.npv);
-        $('#birads-accuracy').text(BIRADSStats.accuracy);
+        $('#birads-samples').text(biradsStats.n);
+        $('#birads-sensitivity').text(biradsStats.sensitivity);
+        $('#birads-specificity').text(biradsStats.specificity);
+        $('#birads-ppv').text(biradsStats.ppv);
+        $('#birads-npv').text(biradsStats.npv);
+        $('#birads-accuracy').text(biradsStats.accuracy);
 
         // Combined results
+        $('#combined-samples').text(combinedStats.n);
         $('#combined-sensitivity').text(combinedStats.sensitivity);
         $('#combined-specificity').text(combinedStats.specificity);
         $('#combined-ppv').text(combinedStats.ppv);
@@ -165,6 +190,73 @@ $(function() {
                 }
             }
         );
+
+        // Update Dooley ROC graph
+        dd1 = [];
+        graph = $('#graph3')[0];
+        for (i = 0; i <= 12; i++) {
+            dd1.push([(1-activestats[i].dooley.specificity).toFixed(2), activestats[i].dooley.sensitivity]);
+        }
+        // if (parseFloat(dd1[dd1.length-1][0]) > 0) { dd1.push(["0.0","0.0"]); }
+        // if (parseFloat(dd1[0][0]) < 1) { dd1.unshift(["1.0","1.0"]); }
+        console.log(dd1)
+        Flotr.draw(graph, [
+                { data: dd1 },
+            ], {
+                colors: ['#00A8F0', '#CB4B4B'],
+                xaxis: {
+                    tickDecimals: 2,
+                    min: 0,
+                    max: 1,
+                },
+                yaxis: {
+                    tickDecimals: 2,
+                    min: 0,
+                    max: 1,
+                },
+                mouse: {
+                    position: 'ne',
+                    track: true,
+                    trackDecimals: 0,
+                    sensibility: 10,
+                    trackY: false,
+                    trackFormatter: function(e) { return 'sens: ' + e.y + '<br/>spec: ' + (1-e.x).toFixed(2); }
+                }
+            }
+        );
+
+        // Update combined ROC graph
+        dd1 = [];
+        graph = $('#graph4')[0];
+        for (i = 0; i <= 12; i++) {
+            dd1.push([(1-activestats[i].combined.specificity).toFixed(2), activestats[i].combined.sensitivity]);
+        }
+        if (parseFloat(dd1[dd1.length-1][0]) > 0) { dd1.push(["0.0","0.0"]); }
+        if (parseFloat(dd1[0][0]) < 1) { dd1.unshift(["1.0","1.0"]); }
+        Flotr.draw(graph, [
+                { data: dd1 },
+            ], {
+                colors: ['#00A8F0', '#CB4B4B'],
+                xaxis: {
+                    tickDecimals: 2,
+                    min: 0,
+                    max: 1,
+                },
+                yaxis: {
+                    tickDecimals: 2,
+                    min: 0,
+                    max: 1,
+                },
+                mouse: {
+                    position: 'ne',
+                    track: true,
+                    trackDecimals: 0,
+                    sensibility: 10,
+                    trackY: false,
+                    trackFormatter: function(e) { return 'sens: ' + e.y + '<br/>spec: ' + (1-e.x).toFixed(2); }
+                }
+            }
+        );
     }
 
     function datasetByName(name) {
@@ -185,12 +277,17 @@ $(function() {
             b = falsepos.length,
             c = falseneg.length,
             d = trueneg.length;
-        
+
         var r = {
             a: a,
             b: b,
             c: c,
             d: d,
+            n: a+b+c+d,
+            n_disease: a+c,
+            n_nodisease: b+d,
+            n_testpos: a+b,
+            n_testneg: c+d,
             sensitivity: a / (a+c),
             specificity: d / (b+d),
             ppv: a / (a+b),
@@ -219,8 +316,9 @@ $(function() {
     function filterCancer(data) { return _.filter(data, function(e) { return e.cancer === 'yes'; }); }
     function filterNoCancer(data) { return _.filter(data, function(e) { return e.cancer === 'no'; }); }
     function countByDooleyScore(data, score) { return _.filter(data, function(e) { return e.total == score; }).length; }
-    function countByBIRADS(data, score) { return _.filter(data, function(e) { return e.birads === score; }).length; }
+    function countByBIRADS(data, score) { return _.filter(data, function(e) { return _.isNumber(e.birads) && (e.birads === score); }).length; }
 
     init();
+    refreshStats();
     refresh();
 });
