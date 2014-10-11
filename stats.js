@@ -79,7 +79,7 @@ $(function() {
         $('#npv').text(npv.toFixed(2));
         $('#accuracy').text(accuracy.toFixed(2));
 
-        // Update graphs
+        // Update Dooley score graph
         var i,
             dd1 = [],
             dd2 = [],
@@ -117,9 +117,44 @@ $(function() {
                 }
             }
         );
-
-        // drawGraph($('.graph')[0], start);
-        // drawGraph($('.graph')[1], start);
+        
+        // Update BIRADS score graph
+        dd1=[];
+        dd2=[];
+        max = 0;
+        graph = $('#graph2')[0];
+        for (i = 0; i <= 5; i++) {
+            var nocancercount = countByBIRADS(nocancer, i),
+                cancercount = countByBIRADS(cancer, i);
+            dd1.push([i, nocancercount]);
+            dd2.push([i, cancercount]);
+            max = Math.max(max, nocancercount, cancercount);
+        }
+        Flotr.draw(graph, [
+                { data: dd1, label: '&nbsp;Cancer -'},
+                { data: dd2, label: '&nbsp;Cancer +'},
+                { data: [[4, 0], [4, max]]}
+            ], {
+                colors: ['#00A8F0', '#C0D800', '#CB4B4B'],
+                xaxis: {
+                    ticks: [0,1,2,3,4,5],
+                    min: 0,
+                    max: 5,
+                    tickDecimals: 0
+                },
+                mouse: {
+                    position: 'ne',
+                    track: true,
+                    trackDecimals: 0,
+                    sensibility: 10,
+                    trackY: true,
+                    trackFormatter: function(e) { return 'n = '+e.y; }
+                },
+                legend : {
+                    position : 'se',
+                }
+            }
+        );
     }
 
     function datasetByName(name) {
@@ -137,29 +172,7 @@ $(function() {
     function filterDooleyGeThreshold(data, threshold) { return _.filter(data, function(e) { return e.total >= threshold; }); }
     function filterDooleyLtThreshold(data, threshold) { return _.filter(data, function(e) { return e.total < threshold; }); }
     function countByDooleyScore(data, score) { return _.filter(data, function(e) { return e.total == score; }).length; }
-
-    var container = $('#graph1')[0],
-        start = (new Date).getTime(),
-        dd, graph, offset, i;
-
-    // Draw a sine curve at time t
-    function drawGraph(container, t) {
-        var dd = [];
-        offset = 2 * Math.PI * (t - start) / 10000;
-
-        // Sample the sine function
-        for (i = 0; i < 4 * Math.PI; i += 0.2) {
-        dd.push([i, Math.sin(i - offset)]);
-        }
-
-        // Draw Graph
-        graph = Flotr.draw(container, [ dd ], {
-            yaxis : {
-              max : 2,
-              min : -2
-            }
-        });
-    }
+    function countByBIRADS(data, score) { return _.filter(data, function(e) { return e.birads === score; }).length; }
 
     init();
     refresh();
