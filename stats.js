@@ -37,74 +37,57 @@ $(function() {
         activedata = filterCancerDefined(activedata);
         $('#n').text(activedata.length);
 
-        // Update Dooley Score outcomes table
+        // Calculate all stats
         var threshold = parseInt($('#threshold').val());
         var cancer = filterCancer(activedata),
-            nocancer = filterNoCancer(activedata),
-            gethreshold = filterDooleyGeThreshold(activedata, threshold),
-            ltthreshold = filterDooleyLtThreshold(activedata, threshold),
-            truepos = filterDooleyGeThreshold(cancer, threshold),
-            falsepos = filterDooleyGeThreshold(nocancer, threshold),
-            falseneg = filterDooleyLtThreshold(cancer, threshold),
-            trueneg = filterDooleyLtThreshold(nocancer, threshold),
-            a = truepos.length,
-            b = falsepos.length,
-            c = falseneg.length,
-            d = trueneg.length;
+            nocancer = filterNoCancer(activedata);
+        var dooleyStats = calcStats(
+                cancer, 
+                nocancer,
+                function(e) { return e.total >= threshold; },
+                function(e) { return e.total < threshold; }),
+            BIRADSStats = calcStats(
+                cancer,
+                nocancer,
+                function(e) { return e.birads >= 4; },
+                function(e) { return e.birads < 4; })
+            combinedStats = calcStats(
+                cancer,
+                nocancer,
+                function(e) { return (e.total >= threshold) || (e.birads >= 4); },
+                function(e) { return (e.total < threshold) && (e.birads < 4); });
 
+        // Update Dooley Score outcomes table
         $('.outcome-threshold').text(threshold);
         $('#outcome-ttl-col-1').text(cancer.length);
         $('#outcome-ttl-col-2').text(nocancer.length);
-        $('#outcome-ttl-row-1').text(gethreshold.length);
-        $('#outcome-ttl-row-2').text(ltthreshold.length);
-        $('#true-pos').text(a);
-        $('#false-pos').text(b);
-        $('#false-neg').text(c);
-        $('#true-neg').text(d);
+        $('#outcome-ttl-row-1').text(dooleyStats.a + dooleyStats.c);
+        $('#outcome-ttl-row-2').text(dooleyStats.b + dooleyStats.d);
+        $('#true-pos').text(dooleyStats.a);
+        $('#false-pos').text(dooleyStats.b);
+        $('#false-neg').text(dooleyStats.c);
+        $('#true-neg').text(dooleyStats.d);
 
-        // Update Dooley Score calculations
-        var sensitivity = a / (a+c),
-            specificity = d / (b+d),
-            ppv = a / (a+b),
-            npv = d / (d+c),
-            accuracy = (a+d) / (a+b+c+d);
-        if (isNaN(sensitivity)) { sensitivity = 0; }
-        if (isNaN(specificity)) { specificity = 0; }
-        if (isNaN(ppv)) { ppv = 0; }
-        if (isNaN(npv)) { npv = 0; }
-        if (isNaN(accuracy)) { accuracy = 0; }
-        $('#sensitivity').text(sensitivity.toFixed(2));
-        $('#specificity').text(specificity.toFixed(2));
-        $('#ppv').text(ppv.toFixed(2));
-        $('#npv').text(npv.toFixed(2));
-        $('#accuracy').text(accuracy.toFixed(2));
+        // Dooley Score results
+        $('#sensitivity').text(dooleyStats.sensitivity);
+        $('#specificity').text(dooleyStats.specificity);
+        $('#ppv').text(dooleyStats.ppv);
+        $('#npv').text(dooleyStats.npv);
+        $('#accuracy').text(dooleyStats.accuracy);
 
-        // Update BIRADS calculations
-        gethreshold = filterBIRADSGeThreshold(activedata, 4);
-        ltthreshold = filterBIRADSLtThreshold(activedata, 4);
-        truepos = filterBIRADSGeThreshold(cancer, 4);
-        falsepos = filterBIRADSGeThreshold(nocancer, 4);
-        falseneg = filterBIRADSLtThreshold(cancer, 4);
-        trueneg = filterBIRADSLtThreshold(nocancer, 4);
-        a = truepos.length;
-        b = falsepos.length;
-        c = falseneg.length;
-        d = trueneg.length;
-        sensitivity = a / (a+c);
-        specificity = d / (b+d);
-        ppv = a / (a+b);
-        npv = d / (d+c);
-        accuracy = (a+d) / (a+b+c+d);
-        if (isNaN(sensitivity)) { sensitivity = 0; }
-        if (isNaN(specificity)) { specificity = 0; }
-        if (isNaN(ppv)) { ppv = 0; }
-        if (isNaN(npv)) { npv = 0; }
-        if (isNaN(accuracy)) { accuracy = 0; }
-        $('#birads-sensitivity').text(sensitivity.toFixed(2));
-        $('#birads-specificity').text(specificity.toFixed(2));
-        $('#birads-ppv').text(ppv.toFixed(2));
-        $('#birads-npv').text(npv.toFixed(2));
-        $('#birads-accuracy').text(accuracy.toFixed(2));
+        // BIRADS results
+        $('#birads-sensitivity').text(BIRADSStats.sensitivity);
+        $('#birads-specificity').text(BIRADSStats.specificity);
+        $('#birads-ppv').text(BIRADSStats.ppv);
+        $('#birads-npv').text(BIRADSStats.npv);
+        $('#birads-accuracy').text(BIRADSStats.accuracy);
+
+        // Combined results
+        $('#combined-sensitivity').text(combinedStats.sensitivity);
+        $('#combined-specificity').text(combinedStats.specificity);
+        $('#combined-ppv').text(combinedStats.ppv);
+        $('#combined-npv').text(combinedStats.npv);
+        $('#combined-accuracy').text(combinedStats.accuracy);
 
         // Update Dooley score graph
         var i,
@@ -193,14 +176,49 @@ $(function() {
         return null;
     }
 
+    function calcStats(disease, noDisease, filterTestPosFun, filterTestNegFun) {
+        var truepos = _.filter(disease, filterTestPosFun),
+            falsepos = _.filter(noDisease, filterTestPosFun),
+            falseneg = _.filter(disease, filterTestNegFun),
+            trueneg = _.filter(noDisease, filterTestNegFun),
+            a = truepos.length,
+            b = falsepos.length,
+            c = falseneg.length,
+            d = trueneg.length;
+        
+        var r = {
+            a: a,
+            b: b,
+            c: c,
+            d: d,
+            sensitivity: a / (a+c),
+            specificity: d / (b+d),
+            ppv: a / (a+b),
+            npv: d / (d+c),
+            accuracy: (a+d) / (a+b+c+d)
+        };
+
+        // Fixed decimal places
+        var fixedFields = ['sensitivity', 'specificity', 'ppv', 'npv', 'accuracy'];
+        for (var i in fixedFields) {
+            r[fixedFields[i]] = r[fixedFields[i]].toFixed(2);
+        }
+
+        // Convert all NaN (divide by 0) to 0
+        var nanFields = ['sensitivity', 'specificity', 'ppv', 'npv', 'accuracy'];
+        for (var i in nanFields) {
+            if (isNaN(r[nanFields[i]])) {
+                r[nanFields[i]] = 0;
+            }
+        }
+
+        return r;
+    }
+
     function filterCancerDefined(data) { return _.filter(data, function(e) { return e.cancer.match(/yes|no/); }); }
     function filterCancer(data) { return _.filter(data, function(e) { return e.cancer === 'yes'; }); }
     function filterNoCancer(data) { return _.filter(data, function(e) { return e.cancer === 'no'; }); }
-    function filterDooleyGeThreshold(data, threshold) { return _.filter(data, function(e) { return e.total >= threshold; }); }
-    function filterDooleyLtThreshold(data, threshold) { return _.filter(data, function(e) { return e.total < threshold; }); }
     function countByDooleyScore(data, score) { return _.filter(data, function(e) { return e.total == score; }).length; }
-    function filterBIRADSGeThreshold(data, threshold) { return _.filter(data, function(e) { return e.birads >= threshold; }); }
-    function filterBIRADSLtThreshold(data, threshold) { return _.filter(data, function(e) { return e.birads < threshold; }); }
     function countByBIRADS(data, score) { return _.filter(data, function(e) { return e.birads === score; }).length; }
 
     init();
