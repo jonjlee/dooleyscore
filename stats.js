@@ -77,8 +77,46 @@ $(function() {
         $('#accuracy').text(accuracy.toFixed(2));
 
         // Update graphs
-        drawGraph($('.graph')[0], start);
-        drawGraph($('.graph')[1], start);
+        var i,
+            dd1 = [],
+            dd2 = [],
+            max = 0,
+            graph = $('#graph1')[0];
+        for (i = 0; i <= 12; i++) {
+            var nocancercount = countByDooleyScore(nocancer, i),
+                cancercount = countByDooleyScore(cancer, i);
+            dd1.push([i, nocancercount]);
+            dd2.push([i, cancercount]);
+            max = Math.max(max, nocancercount, cancercount);
+        }
+        Flotr.draw(graph, [
+                { data: dd1, label: '&nbsp;Cancer -'},
+                { data: dd2, label: '&nbsp;Cancer +'},
+                { data: [[threshold, 0], [threshold, max]]}
+            ], {
+                colors: ['#00A8F0', '#C0D800', '#CB4B4B'],
+                xaxis: {
+                    ticks: [0,1,2,3,4,5,6,7,8,9,10,11,12],
+                    min: 0,
+                    max: 12,
+                    tickDecimals: 0
+                },
+                mouse: {
+                    position: 'ne',
+                    track: true,
+                    trackDecimals: 0,
+                    sensibility: 10,
+                    trackY: true,
+                    trackFormatter: function(e) { return 'n = '+e.y; }
+                },
+                legend : {
+                    position : 'se',
+                }
+            }
+        );
+
+        // drawGraph($('.graph')[0], start);
+        // drawGraph($('.graph')[1], start);
     }
 
     function datasetByName(name) {
@@ -95,6 +133,7 @@ $(function() {
     function filterNoCancer(data) { return _.filter(data, function(e) { return e.cancer === 'no'; }); }
     function filterDooleyGeThreshold(data, threshold) { return _.filter(data, function(e) { return e.total >= threshold; }); }
     function filterDooleyLtThreshold(data, threshold) { return _.filter(data, function(e) { return e.total < threshold; }); }
+    function countByDooleyScore(data, score) { return _.filter(data, function(e) { return e.total == score; }).length; }
 
     var container = $('#graph1')[0],
         start = (new Date).getTime(),
