@@ -35,7 +35,7 @@ AllSheetInfo = {
         dataset_name='Breast Pain',
         sheet_name='Breast Pain',
         start_row=1,
-        columns=['Last Name', 'First Name', 'MI', 'Sex', 'Race', 'DOB', 'Age when first seen', 'Current Age', 'MR#', 'Mass', 'Axillary LN', 'Discharge Heme +/-', 'Ducts involved', 'T4 findings', 'Total', 'BIRAD', 'Cancer', 'CC', 'HPI', 'ID1', 'ID2']
+        columns=['Last Name', 'First Name', 'MI', 'Sex', 'Race', 'DOB', 'Age when first seen', 'Current Age', 'MR#', 'Mass', 'Axillary LN', 'Discharge Heme +/-', 'Ducts involved', 'T4 findings', 'Total', 'BIRADS', 'Cancer', 'CC', 'HPI', 'ID1', 'ID2']
     ),
 }
 
