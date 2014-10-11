@@ -80,13 +80,12 @@ $(function() {
         $('#accuracy').text(accuracy.toFixed(2));
 
         // Update BIRADS calculations
-        threshold = 4;
-        gethreshold = filterBIRADSGeThreshold(activedata, threshold);
-        ltthreshold = filterBIRADSLtThreshold(activedata, threshold);
-        truepos = filterBIRADSGeThreshold(cancer, threshold);
-        falsepos = filterBIRADSGeThreshold(nocancer, threshold);
-        falseneg = filterBIRADSLtThreshold(cancer, threshold);
-        trueneg = filterBIRADSLtThreshold(nocancer, threshold);
+        gethreshold = filterBIRADSGeThreshold(activedata, 4);
+        ltthreshold = filterBIRADSLtThreshold(activedata, 4);
+        truepos = filterBIRADSGeThreshold(cancer, 4);
+        falsepos = filterBIRADSGeThreshold(nocancer, 4);
+        falseneg = filterBIRADSLtThreshold(cancer, 4);
+        trueneg = filterBIRADSLtThreshold(nocancer, 4);
         a = truepos.length;
         b = falsepos.length;
         c = falseneg.length;
