@@ -193,56 +193,29 @@ $(function() {
 
         // Update Dooley ROC graph
         dd1 = [];
+        dd2 = [];
         graph = $('#graph3')[0];
         for (i = 0; i <= 12; i++) {
             dd1.push([(1-activestats[i].dooley.specificity).toFixed(2), activestats[i].dooley.sensitivity]);
-        }
-        // if (parseFloat(dd1[dd1.length-1][0]) > 0) { dd1.push(["0.0","0.0"]); }
-        // if (parseFloat(dd1[0][0]) < 1) { dd1.unshift(["1.0","1.0"]); }
-        console.log(dd1)
-        Flotr.draw(graph, [
-                { data: dd1 },
-            ], {
-                colors: ['#00A8F0', '#CB4B4B'],
-                xaxis: {
-                    tickDecimals: 2,
-                    min: 0,
-                    max: 1,
-                },
-                yaxis: {
-                    tickDecimals: 2,
-                    min: 0,
-                    max: 1,
-                },
-                mouse: {
-                    position: 'ne',
-                    track: true,
-                    trackDecimals: 0,
-                    sensibility: 10,
-                    trackY: false,
-                    trackFormatter: function(e) { return 'sens: ' + e.y + '<br/>spec: ' + (1-e.x).toFixed(2); }
-                }
-            }
-        );
-
-        // Update combined ROC graph
-        dd1 = [];
-        graph = $('#graph4')[0];
-        for (i = 0; i <= 12; i++) {
-            dd1.push([(1-activestats[i].combined.specificity).toFixed(2), activestats[i].combined.sensitivity]);
+            dd2.push([(1-activestats[i].combined.specificity).toFixed(2), activestats[i].combined.sensitivity]);
         }
         if (parseFloat(dd1[dd1.length-1][0]) > 0) { dd1.push(["0.0","0.0"]); }
         if (parseFloat(dd1[0][0]) < 1) { dd1.unshift(["1.0","1.0"]); }
+        if (parseFloat(dd2[dd2.length-1][0]) > 0) { dd2.push(["0.0","0.0"]); }
+        if (parseFloat(dd2[0][0]) < 1) { dd2.unshift(["1.0","1.0"]); }
         Flotr.draw(graph, [
-                { data: dd1 },
+                { data: dd1, label: '&nbsp;Dooley Score'},
+                { data: dd2, label: '&nbsp;Combined'},
             ], {
-                colors: ['#00A8F0', '#CB4B4B'],
+                colors: ['#00A8F0', '#C0D800', '#CB4B4B'],
                 xaxis: {
+                    title: '1 - Specificity',
                     tickDecimals: 2,
                     min: 0,
                     max: 1,
                 },
                 yaxis: {
+                    title: 'Sensitivity',
                     tickDecimals: 2,
                     min: 0,
                     max: 1,
@@ -254,6 +227,9 @@ $(function() {
                     sensibility: 10,
                     trackY: false,
                     trackFormatter: function(e) { return 'sens: ' + e.y + '<br/>spec: ' + (1-e.x).toFixed(2); }
+                },
+                legend : {
+                    position : 'se',
                 }
             }
         );
