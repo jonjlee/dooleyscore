@@ -132,7 +132,7 @@ $(function() {
                 { data: dd2, label: '&nbsp;Cancer +'},
                 { data: [[threshold, 0], [threshold, max]]}
             ], {
-                colors: ['#00A8F0', '#C0D800', '#CB4B4B'],
+                colors: ['#00A8F0', '#C0D800', '#9440ED'],
                 xaxis: {
                     ticks: [0,1,2,3,4,5,6,7,8,9,10,11,12],
                     min: 0,
@@ -170,7 +170,7 @@ $(function() {
                 { data: dd2, label: '&nbsp;Cancer +'},
                 { data: [[4, 0], [4, max]]}
             ], {
-                colors: ['#00A8F0', '#C0D800', '#CB4B4B'],
+                colors: ['#00A8F0', '#C0D800', '#9440ED'],
                 xaxis: {
                     ticks: [0,1,2,3,4,5],
                     min: 0,
@@ -191,7 +191,7 @@ $(function() {
             }
         );
 
-        // Update Dooley ROC graph
+        // Update ROC graph
         dd1 = [];
         dd2 = [];
         graph = $('#graph3')[0];
@@ -206,8 +206,10 @@ $(function() {
         Flotr.draw(graph, [
                 { data: dd1, label: '&nbsp;Dooley Score'},
                 { data: dd2, label: '&nbsp;Combined'},
+                { data: [[(1-activestats[threshold].dooley.specificity).toFixed(2), activestats[threshold].dooley.sensitivity]], points: { show: true }},
+                { data: [[(1-activestats[threshold].combined.specificity).toFixed(2), activestats[threshold].combined.sensitivity]], points: { show: true }},
             ], {
-                colors: ['#00A8F0', '#C0D800', '#CB4B4B'],
+                colors: ['#00A8F0', '#C0D800', '#9440ED', '#9440ED'],
                 xaxis: {
                     title: '1 - Spec',
                     tickDecimals: 2,
