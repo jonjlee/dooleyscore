@@ -134,10 +134,14 @@ $(function() {
             ], {
                 colors: ['#00A8F0', '#C0D800', '#9440ED'],
                 xaxis: {
+                    title: 'Dooley Score',
                     ticks: [0,1,2,3,4,5,6,7,8,9,10,11,12],
                     min: 0,
                     max: 12,
                     tickDecimals: 0
+                },
+                yaxis: {
+                    title: 'n',
                 },
                 mouse: {
                     position: 'ne',
@@ -172,10 +176,14 @@ $(function() {
             ], {
                 colors: ['#00A8F0', '#C0D800', '#9440ED'],
                 xaxis: {
+                    title: 'BIRADS Score',
                     ticks: [0,1,2,3,4,5],
                     min: 0,
                     max: 5,
                     tickDecimals: 0
+                },
+                yaxis: {
+                    title: 'n',
                 },
                 mouse: {
                     position: 'ne',
