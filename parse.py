@@ -17,19 +17,19 @@ AllSheetInfo = {
         dataset_name='Nipple Discharge',
         sheet_name='NIpple DC',
         start_row=2,
-        columns=['Last name', 'First name', 'sex', 'race', 'birth date', 'age', 'cc', 'Nipple d/c character', 'Hemoccult +/-', 'visit date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Birads', 'Dx', 'Cancer', 'Patients.Pt ID', 'visits.Pt ID', 'Pt History.Pt ID', 'Notes']
+        columns=['Last name', 'First name', 'sex', 'race', 'DOB', 'age', 'cc', 'Nipple d/c character', 'Hemoccult +/-', 'visit date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Birads', 'Dx', 'Cancer', 'Patients.Pt ID', 'visits.Pt ID', 'Pt History.Pt ID', 'Notes']
     ),
     'Mammography': SheetInfo(
         dataset_name='Abnormal Mammography',
         sheet_name='Mammography',
         start_row=2,
-        columns=['Last name', 'First name', 'Sex', 'Birthdate', 'SSN', 'Notes', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Pt ID', 'BIRADS', 'Density/distortion', 'Calcifications', 'Diagnosis', 'Cancer', 'CC']
+        columns=['Last name', 'First name', 'Sex', 'DOB', 'SSN', 'Notes', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Pt ID', 'BIRADS', 'Density/distortion', 'Calcifications', 'Diagnosis', 'Cancer', 'CC']
     ),
     'Br Mass': SheetInfo(
         dataset_name='Breast Mass',
         sheet_name='Br Mass',
         start_row=2,
-        columns=['Last Name', 'First Name', 'Birthdate', 'Mass Found By', 'Mass Characterization by PennyPacker Exam', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Patient ID', 'MR Number', 'SSN', 'PreOp Diagnosis', 'PostOp Diagnosis', 'Dx', 'Cancer']
+        columns=['Last Name', 'First Name', 'DOB', 'Mass Found By', 'Mass Characterization by PennyPacker Exam', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Patient ID', 'MR Number', 'SSN', 'PreOp Diagnosis', 'PostOp Diagnosis', 'Dx', 'Cancer']
     ),
     'Breast Pain': SheetInfo(
         dataset_name='Breast Pain',
@@ -63,7 +63,30 @@ def parse_data(workbook, sheet_info):
 
     return data
 
-def filter_hpi(data):
+def parse_cancer_pts(workbook):
+    # Open the first worksheet, and extract all first name, last name, and DOB
+    s = workbook.sheet_by_index(0)
+    rows = []
+    for i in range(1, s.nrows):
+        row = s.row_values(i, 1, 5)
+        id = '%s;%s;%s' % (row[0],row[1],row[3])
+        rows.append(id.lower())
+
+    return rows
+
+def set_cancer_field(data, cancer_pts):
+    '''
+    For all patients in cancer_pts (known cancer patients in a list of last;first;dob),
+    set the cancer field for any corresponding entries in data to yes
+    '''
+    for _, dataset in data.items():
+        for row in dataset['data']:
+            pt_name_and_dob = '%s;%s;%s' % (row.get('last name'), row.get('first name'), row.get('dob'))
+            if pt_name_and_dob.lower() in cancer_pts and row.get('cancer') != 'yes':
+                logger.info('Changing %s.cancer from %s to yes', pt_name_and_dob, row.get('cancer'))
+                row['cancer'] = 'yes'
+
+def remove_phi(data):
     # hpi_fields = set()
     hpi_fields = set(['last name', 'first name', 'birth date', 'birthdate', 'dob', 'ssn'])
     for _, dataset in data.items():
@@ -76,7 +99,7 @@ def filter_hpi(data):
     return data
 
 def main(fname, outfile):
-    # Open Excel sheet
+    # Open main Excel data file
     wb = xlrd.open_workbook(fname, on_demand=True)
     logger.debug('Found sheets: %s', wb.sheet_names())
 
@@ -84,7 +107,15 @@ def main(fname, outfile):
     data = parse_data(wb, AllSheetInfo)
     wb.release_resources()
 
-    data = filter_hpi(data)
+    # Uncomment below to set the cancer field to true for all patients in the cancer patients Excel file
+    #
+    # wb = xlrd.open_workbook('2009 to 2012 breast cancer OUMC.xlsx')
+    # cancer_pts = parse_cancer_pts(wb)
+    # wb.release_resources()
+    # set_cancer_field(data, cancer_pts)
+
+    # Remove all PHI
+    remove_phi(data)
     output(data, outfile)
 
 def output(data, outfile):
