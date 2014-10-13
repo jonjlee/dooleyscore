@@ -25,9 +25,39 @@ $(function() {
             });
         });
 
+        // Handlers for component checkboxes
+        $('.ds-component').change(function() { refreshDooleyScore(); });
+
         // Init slider to set threshold
         $("#threshold").slider();
         $("#threshold").on("slide", function(e) { refresh(); });
+
+        refreshDooleyScore();
+    }
+
+    function refreshDooleyScore() {
+        var mass = $('#ds-mass').is(':checked'),
+            ln = $('#ds-ln').is(':checked'),
+            heme = $('#ds-heme').is(':checked'),
+            ducts = $('#ds-ducts').is(':checked'),
+            t4 = $('#ds-t4').is(':checked');
+
+        var i, j, dataset, e;
+        _.each(data, function(dataset) {
+            _.each(dataset.data, function(e) {
+                e.total = 
+                    (mass ? e['mass'] : 0) +
+                    (ln ? e['axillary lns'] : 0) +
+                    (heme ? e['heme discharge'] : 0) +
+                    (ducts ? e['ducts involved'] : 0) +
+                    (t4 ? e['t4 findings'] : 0);
+                if (isNaN(e.total)) {
+                    console.log(e);
+                }
+            });
+        });
+
+        refreshStats();
     }
 
     function refreshStats() {

@@ -17,25 +17,25 @@ AllSheetInfo = {
         dataset_name='Nipple Discharge',
         sheet_name='NIpple DC',
         start_row=2,
-        columns=['Last name', 'First name', 'sex', 'race', 'DOB', 'age', 'cc', 'Nipple d/c character', 'Hemoccult +/-', 'visit date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Birads', 'Dx', 'Cancer', 'Patients.Pt ID', 'visits.Pt ID', 'Pt History.Pt ID', 'Notes']
+        columns=['Last name', 'First name', 'sex', 'race', 'DOB', 'age', 'cc', 'Nipple d/c character', 'Hemoccult +/-', 'visit date', 'Mass', 'Axillary LNs', 'Heme Discharge', 'Ducts Involved', 'T4 Findings', 'Total', 'Birads', 'Dx', 'Cancer', 'Patients.Pt ID', 'visits.Pt ID', 'Pt History.Pt ID', 'Notes']
     ),
     'Mammography': SheetInfo(
         dataset_name='Abnormal Mammography',
         sheet_name='Mammography',
         start_row=2,
-        columns=['Last name', 'First name', 'Sex', 'DOB', 'SSN', 'Notes', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Pt ID', 'BIRADS', 'Density/distortion', 'Calcifications', 'Diagnosis', 'Cancer', 'CC']
+        columns=['Last name', 'First name', 'Sex', 'DOB', 'SSN', 'Notes', 'Visit Date', 'Mass', 'Axillary LNs', 'Heme Discharge', 'Ducts Involved', 'T4 Findings', 'Total', 'Pt ID', 'BIRADS', 'Density/distortion', 'Calcifications', 'Diagnosis', 'Cancer', 'CC']
     ),
     'Br Mass': SheetInfo(
         dataset_name='Breast Mass',
         sheet_name='Br Mass',
         start_row=2,
-        columns=['Last Name', 'First Name', 'DOB', 'Mass Found By', 'Mass Characterization by PennyPacker Exam', 'Visit Date', 'Mass', 'Axillary LNs', 'Discharge Heme +/-', 'Ducts Involved', 'T4 Findings', 'Total', 'Patient ID', 'MR Number', 'SSN', 'PreOp Diagnosis', 'PostOp Diagnosis', 'Dx', 'Cancer']
+        columns=['Last Name', 'First Name', 'DOB', 'Mass Found By', 'Mass Characterization by PennyPacker Exam', 'Visit Date', 'Mass', 'Axillary LNs', 'Heme Discharge', 'Ducts Involved', 'T4 Findings', 'Total', 'Patient ID', 'MR Number', 'SSN', 'PreOp Diagnosis', 'PostOp Diagnosis', 'Dx', 'Cancer']
     ),
     'Breast Pain': SheetInfo(
         dataset_name='Breast Pain',
         sheet_name='Breast Pain',
         start_row=1,
-        columns=['Last Name', 'First Name', 'MI', 'Sex', 'Race', 'DOB', 'Age when first seen', 'Current Age', 'MR#', 'Mass', 'Axillary LN', 'Discharge Heme +/-', 'Ducts involved', 'T4 findings', 'Total', 'BIRADS', 'Cancer', 'CC', 'HPI', 'ID1', 'ID2']
+        columns=['Last Name', 'First Name', 'MI', 'Sex', 'Race', 'DOB', 'Age when first seen', 'Current Age', 'MR#', 'Mass', 'Axillary LNs', 'Heme Discharge', 'Ducts Involved', 'T4 Findings', 'Total', 'BIRADS', 'Cancer', 'CC', 'HPI', 'ID1', 'ID2']
     ),
 }
 
