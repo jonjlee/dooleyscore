@@ -88,6 +88,12 @@
   height: 184px;
   margin: 10px 10px;
 }
+.table-embedded {
+  margin-bottom: 0px;
+}
+.table-middle > tbody > tr > th, .table-middle tbody > tr > td {
+  vertical-align: middle;
+}
 td.shrink, th.shrink {
     white-space: nowrap;
 }

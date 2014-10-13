@@ -115,6 +115,69 @@
                           <td class=""><span id="combined-accuracy"></span></td>
                         </tr>
                     </table>
+                    <div class="spacer"></div>
+
+                    <h4>Comparison of Combined vs BIRADS</h4>
+                    <table class="table table-striped table-bordered table-middle">
+                        <tr>
+                          <th></th>
+                          <th>Difference</th>
+                          <th>McNemar p-value</th>
+                          <th>McNemar Data</th>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Sensitivity</th>
+                          <td class=""><span id="sensitivity-diff"></span></td>
+                          <td class=""><span id="sensitivity-mcnemar"></span></td>
+                          <td class="">
+                            <small>
+                              <table class="table table-condensed table-bordered table-embedded">
+                                <tr>
+                                  <td><center><i>Cancer</i></center></td>
+                                  <th class="shrink">BIRADS +</th>
+                                  <th class="shrink">BIRADS -</th>
+                                </tr>
+                                <tr>
+                                  <th class="shrink">Combined +</th>
+                                  <td id="sensitivity-pospos"></td>
+                                  <td id="sensitivity-posneg"></td>
+                                </tr>
+                                <tr>
+                                  <th class="shrink">Combined -</th>
+                                  <td id="sensitivity-negpos"></td>
+                                  <td id="sensitivity-negneg"></td>
+                                </tr>
+                              </table>
+                            </small>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Specifity</th>
+                          <td class=""><span id="specificity-diff"></span></td>
+                          <td class=""><span id="specificity-mcnemar"></span></td>
+                          <td class="">
+                            <small>
+                              <table class="table table-condensed table-bordered table-embedded">
+                                <tr>
+                                  <td><center><i>No Cancer</i></center></td>
+                                  <th>BIRADS +</th>
+                                  <th>BIRADS -</th>
+                                </tr>
+                                <tr>
+                                  <th>Combined +</th>
+                                  <td id="specificity-pospos"></td>
+                                  <td id="specificity-posneg"></td>
+                                </tr>
+                                <tr>
+                                  <th>Combined -</th>
+                                  <td id="specificity-negpos"></td>
+                                  <td id="specificity-negneg"></td>
+                                </tr>
+                              </table>
+                            </small>
+                          </td>
+                        </tr>
+                    </table>
                 </div>
                 <div class="col-md-6">
                     <h4>Dooley Score:</h4>
@@ -136,8 +199,8 @@
 
     <!-- Templates -->
     <script id="dataset-template" type="text/template">
-        <label id="<%= id %>" class="dataset btn btn-sm btn-default active">
-            <input type="checkbox" checked><%= name %></input>
+        <label id="<%= id %>" class="dataset btn btn-sm btn-default">
+            <input type="checkbox"><%= name %></input>
         </label>
     </script>
 
