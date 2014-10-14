@@ -55,7 +55,7 @@ def main():
         'Breast Mass',
         'Breast Pain',
         'Nipple Discharge',
-        'Abnormal Mammography',
+        # 'Abnormal Mammography',
     ]
     activedata = []
     with open('data.json', 'r') as f:

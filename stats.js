@@ -310,17 +310,21 @@ $(function() {
         dd2 = [];
         dd3 = [];
         graph = $('#graph3')[0];
-        for (i = 0; i <= 12; i++) {
+        for (i = 0; i <= 13; i++) {
             dd1.push([(1-activestats[i].dooley.specificity/100).toFixed(2), activestats[i].dooley.sensitivity/100]);
             dd2.push([(1-activestats[i].combined.specificity/100).toFixed(2), activestats[i].combined.sensitivity/100]);
         }
-        for (i = 0; i <= 5; i++) {
+        for (i = 0; i <= 6; i++) {
             dd3.push([(1-activestats['birads'+i].specificity/100).toFixed(2), activestats['birads'+i].sensitivity/100])
         }
+        if (parseFloat(dd1[dd1.length-1][0]) > 0) { dd1.push(["0.0","0.0"]); }
+        if (parseFloat(dd1[0][0]) < 1) { dd1.unshift(["1.0","1.0"]); }
+        if (parseFloat(dd2[dd2.length-1][0]) > 0) { dd2.push(["0.0","0.0"]); }
+        if (parseFloat(dd2[0][0]) < 1) { dd2.unshift(["1.0","1.0"]); }
         Flotr.draw(graph, [
                 { data: dd1, label: '&nbsp;Dooley Score', lines: { show: true }, points: { show: true }},
-                { data: dd2, label: '&nbsp;BIRADS', lines: { show: true }, points: { show: true }},
-                { data: dd3, label: '&nbsp;Combined', lines: { show: true }, points: { show: true }},
+                { data: dd2, label: '&nbsp;Combined', lines: { show: true }, points: { show: true }},
+                { data: dd3, label: '&nbsp;BIRADS', lines: { show: true }, points: { show: true }},
                 { data: [[(1-activestats[threshold].dooley.specificity/100).toFixed(2), activestats[threshold].dooley.sensitivity/100]], points: { radius: 4, lineWidth: 8, show: true }},
                 { data: [[(1-activestats[threshold].combined.specificity/100).toFixed(2), activestats[threshold].combined.sensitivity/100]], points: { radius: 4, lineWidth: 8, show: true }},
             ], {
