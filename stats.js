@@ -85,8 +85,8 @@ $(function() {
             filterDooleyPos = function(e) { return (e.total >= threshold); },
             filterDooleyNeg = function(e) { return (e.total < threshold); };
             filterCombinedValid = function(e) { return _.isNumber(e.total) && _.isNumber(e.birads); },
-            filterCombinedPos = function(e) { return ((e.total >= threshold) || (e.birads >= 4)); },
-            filterCombinedNeg = function(e) { return ((e.total < threshold) && (e.birads < 4)); };
+            filterCombinedPos = function(e) { return ((e.total >= threshold) || (e.birads >= Math.max(4, threshold))); },
+            filterCombinedNeg = function(e) { return ((e.total < threshold) && (e.birads < Math.max(4, threshold))); };
         for (threshold = 0; threshold <= 13; threshold++) {
             activestats[threshold] = {
                 dooley: calcStats(

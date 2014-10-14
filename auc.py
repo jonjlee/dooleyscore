@@ -7,8 +7,9 @@ import numpy as np
 from sklearn import metrics
 from sklearn import metrics
 
-# def dooleyScore(e): return (e['mass'] + e['axillary lns'] + e['heme discharge'] + e['ducts involved'] + e['t4 findings'])
-def dooleyScore(e): return (e['mass']*2 + e['axillary lns'] + e['heme discharge'] + e['t4 findings'])
+def dooleyScore(e): return (e['mass'] + e['axillary lns'] + e['heme discharge'] + e['ducts involved'] + e['t4 findings'])
+# def dooleyScore(e): return (e['mass'] + e['axillary lns'] + e['heme discharge'] + e['t4 findings'])
+# def dooleyScore(e): return (e['mass']*2 + e['axillary lns'] + e['heme discharge'] + e['t4 findings'])
 
 def filterCancerDefined(data):
     return filter(lambda e: re.search('yes|no', e['birads']), data)
@@ -24,8 +25,6 @@ def filterBiradsPos(e): return (e['birads'] >= 4)
 def filterBiradsNeg(e): return (e['birads'] < 4)
 def filterDooleyValid(e): return ('total' in e) and (type(e['total']) is float)
 def filterCombinedValid(e): return ('total' in e) and (type(e['total']) is float) and ('birads' in e) and (type(e['birads']) is float)
-def filterCombinedPos(e): return ((e['total'] >= threshold) or (e['birads'] >= 4))
-def filterCombinedNeg(e): return ((e['total'] < threshold) and (e['birads'] < 4))
 
 def calcStats(disease, noDisease, filterValidFun, filterTestPosFun, filterTestNegFun):
     validDisease = list(filter(filterValidFun, disease))
@@ -78,39 +77,45 @@ def main():
         try:
             dooleyStats.append(
                 calcStats(
-                        cancer,
-                        nocancer,
-                        filterDooleyValid,
-                        lambda e: ((float(e['total']) >= threshold)),
-                        lambda e: ((float(e['total']) < threshold))))
+                    cancer,
+                    nocancer,
+                    filterDooleyValid,
+                    lambda e: ((float(e['total']) >= threshold)),
+                    lambda e: ((float(e['total']) < threshold))
+                ))
         except ValueError as e:
             print(e)
+    if dooleyStats[-1][1] < 1: dooleyStats.append((0,1))
 
     combinedStats = []
     for threshold in range(0,14):
         try:
             combinedStats.append(
                 calcStats(
-                        cancer,
-                        nocancer,
-                        filterCombinedValid,
-                        lambda e: ((float(e['total']) >= threshold) or (float(e['birads']) >= 4)),
-                        lambda e: ((float(e['total']) < threshold) and (float(e['birads']) < 4))))
+                    cancer,
+                    nocancer,
+                    filterCombinedValid,
+                    lambda e: ((float(e['total']) >= threshold) or (float(e['birads']) >= max(4, threshold))),
+                    lambda e: ((float(e['total']) < threshold) and (float(e['birads']) < max(4, threshold)))
+                ))
         except ValueError as e:
             print(e)
+    if combinedStats[-1][1] < 1: combinedStats.append((0,1, '-'))
     
     biradsStats = []
     for threshold in range(0,7):
         try:
             biradsStats.append(
                 calcStats(
-                        cancer,
-                        nocancer,
-                        filterCombinedValid,
-                        lambda e: (float(e['birads']) >= threshold),
-                        lambda e: (float(e['birads']) < threshold)))
+                    cancer,
+                    nocancer,
+                    filterCombinedValid,
+                    lambda e: (float(e['birads']) >= threshold),
+                    lambda e: (float(e['birads']) < threshold)
+                ))
         except ValueError as e:
             print(e)
+    if biradsStats[-1][1] < 1: biradsStats.append((0,1))
 
     print('Dooley Score:')
     pprint([e[-1] for e in dooleyStats])
