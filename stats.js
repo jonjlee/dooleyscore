@@ -3,7 +3,7 @@ $(function() {
         // Add dataset button for each dataset
         var $datasets = $('#datasets'),
             avail = Object.keys(data).sort(),
-            active = ['Nipple Discharge', 'Breast Pain'];
+            active = ['Nipple Discharge', 'Breast Pain', 'Breast Mass'];
         _.each(avail, function(datasetName, idx) {
             var tpl = _.template($('#dataset-template').html()),
                 id = 'dataset-' + idx;
@@ -37,6 +37,7 @@ $(function() {
 
     function refreshDooleyScore() {
         var mass = $('#ds-mass').is(':checked'),
+            mass2x = $('#ds-mass2x').is(':checked'),
             ln = $('#ds-ln').is(':checked'),
             heme = $('#ds-heme').is(':checked'),
             ducts = $('#ds-ducts').is(':checked'),
@@ -46,11 +47,12 @@ $(function() {
         _.each(data, function(dataset) {
             _.each(dataset.data, function(e) {
                 e.total = 
-                    (mass ? e['mass'] : 0) +
-                    (ln ? e['axillary lns'] : 0) +
-                    (heme ? e['heme discharge'] : 0) +
-                    (ducts ? e['ducts involved'] : 0) +
-                    (t4 ? e['t4 findings'] : 0);
+                    (mass && !mass2x ? e['mass'] || 0 : 0) +
+                    (mass2x ? e['mass']*2 || 0 : 0) +
+                    (ln ? e['axillary lns'] || 0 : 0) +
+                    (heme ? e['heme discharge'] || 0 : 0) +
+                    (ducts ? e['ducts involved'] || 0 : 0) +
+                    (t4 ? e['t4 findings'] && e['t4 findings'] || 0 : 0);
                 if (isNaN(e.total)) {
                     console.log(e);
                 }
@@ -72,16 +74,20 @@ $(function() {
             activedata = activedata.concat(subset.data);
         });
         activedata = filterCancerDefined(activedata);
+        // activedata = _.filter(activedata, function(e) { return e['mass']==0; });
 
         // Calculate all stats
         var cancer = filterCancer(activedata),
             nocancer = filterNoCancer(activedata),
             filterBiradsPos = function(e) { return (e.birads >= 4); },
             filterBiradsNeg = function(e) { return (e.birads < 4); },
+            filterDooleyValid = function(e) { return _.isNumber(e.total); },
+            filterDooleyPos = function(e) { return (e.total >= threshold); },
+            filterDooleyNeg = function(e) { return (e.total < threshold); };
             filterCombinedValid = function(e) { return _.isNumber(e.total) && _.isNumber(e.birads); },
             filterCombinedPos = function(e) { return ((e.total >= threshold) || (e.birads >= 4)); },
             filterCombinedNeg = function(e) { return ((e.total < threshold) && (e.birads < 4)); };
-        for (threshold = 0; threshold <= 12; threshold++) {
+        for (threshold = 0; threshold <= 13; threshold++) {
             activestats[threshold] = {
                 dooley: calcStats(
                     cancer, 
@@ -104,6 +110,14 @@ $(function() {
                 mcnemar: compareStats(
                     cancer,
                     nocancer,
+                    filterDooleyValid,
+                    filterDooleyPos,
+                    filterDooleyNeg,
+                    filterBiradsPos,
+                    filterBiradsNeg),
+                mcnemarCombined: compareStats(
+                    cancer,
+                    nocancer,
                     filterCombinedValid,
                     filterCombinedPos,
                     filterCombinedNeg,
@@ -111,7 +125,7 @@ $(function() {
                     filterBiradsNeg),
             }
         }
-        for (threshold = 0; threshold <= 5; threshold++) {
+        for (threshold = 0; threshold <= 6; threshold++) {
             activestats['birads' + threshold] = calcStats(
                 cancer,
                 nocancer,
@@ -138,6 +152,7 @@ $(function() {
             biradsStats = activestats[threshold].birads,
             combinedStats = activestats[threshold].combined,
             mcnemarStats = activestats[threshold].mcnemar;
+            mcnemarCombinedStats = activestats[threshold].mcnemarCombined;
 
         // Update Dooley Score outcomes table
         $('.outcome-threshold').text(threshold);
@@ -152,29 +167,29 @@ $(function() {
 
         // Dooley Score results
         $('#samples').text(dooleyStats.n);
-        $('#sensitivity').text(dooleyStats.sensitivity);
-        $('#specificity').text(dooleyStats.specificity);
+        $('#sensitivity').html(dooleyStats.sensitivity + '%<br><small><i>95%: ' + dooleyStats.sensitivity_CI[0] + ' to ' + dooleyStats.sensitivity_CI[1] + '</i></small>');
+        $('#specificity').html(dooleyStats.specificity + '%<br><small><i>95%: ' + dooleyStats.specificity_CI[0] + ' to ' + dooleyStats.specificity_CI[1] + '</i></small>');
         $('#ppv').text(dooleyStats.ppv);
         $('#npv').text(dooleyStats.npv);
         $('#accuracy').text(dooleyStats.accuracy);
 
         // BIRADS results
         $('#birads-samples').text(biradsStats.n);
-        $('#birads-sensitivity').text(biradsStats.sensitivity);
-        $('#birads-specificity').text(biradsStats.specificity);
+        $('#birads-sensitivity').html(biradsStats.sensitivity + '%<br><small><i>95%: ' + biradsStats.sensitivity_CI[0] + ' to ' + biradsStats.sensitivity_CI[1] + '</i></small>');
+        $('#birads-specificity').html(biradsStats.specificity + '%<br><small><i>95%: ' + biradsStats.specificity_CI[0] + ' to ' + biradsStats.specificity_CI[1] + '</i></small>');
         $('#birads-ppv').text(biradsStats.ppv);
         $('#birads-npv').text(biradsStats.npv);
         $('#birads-accuracy').text(biradsStats.accuracy);
 
         // Combined results
         $('#combined-samples').text(combinedStats.n);
-        $('#combined-sensitivity').text(combinedStats.sensitivity);
-        $('#combined-specificity').text(combinedStats.specificity);
+        $('#combined-sensitivity').html(combinedStats.sensitivity + '%<br><small><i>95%: ' + combinedStats.sensitivity_CI[0] + ' to ' + combinedStats.sensitivity_CI[1] + '</i></small>');
+        $('#combined-specificity').html(combinedStats.specificity + '%<br><small><i>95%: ' + combinedStats.specificity_CI[0] + ' to ' + combinedStats.specificity_CI[1] + '</i></small>');
         $('#combined-ppv').text(combinedStats.ppv);
         $('#combined-npv').text(combinedStats.npv);
         $('#combined-accuracy').text(combinedStats.accuracy);
 
-        // Comparison
+        // Dooley Score Comparison
         $('#sensitivity-pospos').text(mcnemarStats.sensitivity.pospos);
         $('#sensitivity-posneg').text(mcnemarStats.sensitivity.posneg);
         $('#sensitivity-negpos').text(mcnemarStats.sensitivity.negpos);
@@ -188,6 +203,21 @@ $(function() {
         $('#specificity-negneg').text(mcnemarStats.specificity.negneg);
         $('#specificity-diff').text((mcnemarStats.specificity.diff * 100).toFixed(2) + '%');
         $('#specificity-mcnemar').text(mcnemarStats.specificity.p);
+
+        // Combined Comparison
+        $('#combined-sensitivity-pospos').text(mcnemarCombinedStats.sensitivity.pospos);
+        $('#combined-sensitivity-posneg').text(mcnemarCombinedStats.sensitivity.posneg);
+        $('#combined-sensitivity-negpos').text(mcnemarCombinedStats.sensitivity.negpos);
+        $('#combined-sensitivity-negneg').text(mcnemarCombinedStats.sensitivity.negneg);
+        $('#combined-sensitivity-diff').text((mcnemarCombinedStats.sensitivity.diff * 100).toFixed(2) + '%');
+        $('#combined-sensitivity-mcnemar').text(mcnemarCombinedStats.sensitivity.p);
+        
+        $('#combined-specificity-pospos').text(mcnemarCombinedStats.specificity.pospos);
+        $('#combined-specificity-posneg').text(mcnemarCombinedStats.specificity.posneg);
+        $('#combined-specificity-negpos').text(mcnemarCombinedStats.specificity.negpos);
+        $('#combined-specificity-negneg').text(mcnemarCombinedStats.specificity.negneg);
+        $('#combined-specificity-diff').text((mcnemarCombinedStats.specificity.diff * 100).toFixed(2) + '%');
+        $('#combined-specificity-mcnemar').text(mcnemarCombinedStats.specificity.p);
 
         // Update Dooley score graph
         var i,
@@ -281,22 +311,18 @@ $(function() {
         dd3 = [];
         graph = $('#graph3')[0];
         for (i = 0; i <= 12; i++) {
-            dd1.push([(1-activestats[i].dooley.specificity).toFixed(2), activestats[i].dooley.sensitivity]);
-            dd2.push([(1-activestats[i].combined.specificity).toFixed(2), activestats[i].combined.sensitivity]);
+            dd1.push([(1-activestats[i].dooley.specificity/100).toFixed(2), activestats[i].dooley.sensitivity/100]);
+            dd2.push([(1-activestats[i].combined.specificity/100).toFixed(2), activestats[i].combined.sensitivity/100]);
         }
         for (i = 0; i <= 5; i++) {
-            dd3.push([(1-activestats['birads'+i].specificity).toFixed(2), activestats['birads'+i].sensitivity])
+            dd3.push([(1-activestats['birads'+i].specificity/100).toFixed(2), activestats['birads'+i].sensitivity/100])
         }
-        if (parseFloat(dd1[dd1.length-1][0]) > 0) { dd1.push(["0.0","0.0"]); }
-        if (parseFloat(dd1[0][0]) < 1) { dd1.unshift(["1.0","1.0"]); }
-        if (parseFloat(dd2[dd2.length-1][0]) > 0) { dd2.push(["0.0","0.0"]); }
-        if (parseFloat(dd2[0][0]) < 1) { dd2.unshift(["1.0","1.0"]); }
         Flotr.draw(graph, [
                 { data: dd1, label: '&nbsp;Dooley Score', lines: { show: true }, points: { show: true }},
                 { data: dd2, label: '&nbsp;BIRADS', lines: { show: true }, points: { show: true }},
                 { data: dd3, label: '&nbsp;Combined', lines: { show: true }, points: { show: true }},
-                { data: [[(1-activestats[threshold].dooley.specificity).toFixed(2), activestats[threshold].dooley.sensitivity]], points: { radius: 4, lineWidth: 8, show: true }},
-                { data: [[(1-activestats[threshold].combined.specificity).toFixed(2), activestats[threshold].combined.sensitivity]], points: { radius: 4, lineWidth: 8, show: true }},
+                { data: [[(1-activestats[threshold].dooley.specificity/100).toFixed(2), activestats[threshold].dooley.sensitivity/100]], points: { radius: 4, lineWidth: 8, show: true }},
+                { data: [[(1-activestats[threshold].combined.specificity/100).toFixed(2), activestats[threshold].combined.sensitivity/100]], points: { radius: 4, lineWidth: 8, show: true }},
             ], {
                 colors: ['#00A8F0', '#C0D800', '#663300', '#9440ED', '#9440ED'],
                 xaxis: {
@@ -345,7 +371,10 @@ $(function() {
             a = truepos.length,
             b = falsepos.length,
             c = falseneg.length,
-            d = trueneg.length;
+            d = trueneg.length,
+            n = a+b+c+d,
+            sensitivity = a / (a+c),
+            specificity = d / (b+d);
 
         var r = {
             a: a,
@@ -357,17 +386,29 @@ $(function() {
             n_nodisease: b+d,
             n_testpos: a+b,
             n_testneg: c+d,
-            sensitivity: a / (a+c),
-            specificity: d / (b+d),
+            sensitivity: sensitivity * 100,
+            sensitivity_CI: [
+                (sensitivity - 1.96 * Math.sqrt(sensitivity * (1 - sensitivity) / n)) * 100,
+                (sensitivity + 1.96 * Math.sqrt(sensitivity * (1 - sensitivity) / n)) * 100],
+            specificity: specificity * 100,
+            specificity_CI: [
+                (specificity - 1.96 * Math.sqrt(specificity * (1 - specificity) / n)) * 100,
+                (specificity + 1.96 * Math.sqrt(specificity * (1 - specificity) / n)) * 100],
             ppv: a / (a+b),
             npv: d / (d+c),
-            accuracy: (a+d) / (a+b+c+d)
+            accuracy: (a+d) / (a+b+c+d) * 100,
         };
 
         // Fixed decimal places
-        var fixedFields = ['sensitivity', 'specificity', 'ppv', 'npv', 'accuracy'];
+        var fixedFields = ['sensitivity', 'specificity', 'ppv', 'npv', 'accuracy', 'sensitivity_CI', 'specificity_CI'];
         for (var i in fixedFields) {
-            r[fixedFields[i]] = r[fixedFields[i]].toFixed(2);
+            if (Array.isArray(r[fixedFields[i]])) {
+                for (var j in r[fixedFields[i]]) {
+                    r[fixedFields[i]][j] = r[fixedFields[i]][j].toFixed(2); 
+                }
+            } else {
+                r[fixedFields[i]] = r[fixedFields[i]].toFixed(2); 
+            }
         }
 
         // Convert all NaN (divide by 0) to 0
