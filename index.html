@@ -50,8 +50,7 @@
                       <td><input type="checkbox" id="ds-ducts" class="ds-component"> Ducts</td>
                     </tr>
                     <tr>
-                      <td></td>
-                      <td></td>
+                      <td colspan="2"><input type="checkbox" id="ds-hemeduct" class="ds-component"> Single duct, heme+</td>
                     </tr>
                   </table>
                 </small>
@@ -157,15 +156,8 @@
                           <td class=""><span id="combined-accuracy"></span></td>
                         </tr>
                     </table>
-                </div>
-                <div class="col-md-6">
-                    <h4>ROC</h4>
-                    <div id="graph3" class="graph"></div>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6">
+                    <div class="spacer"></div>
                     <h4>Dooley Score vs BIRADS</h4>
                     <table class="table table-striped table-bordered table-middle">
                         <tr>
@@ -227,8 +219,8 @@
                           </td>
                         </tr>
                     </table>
-                </div>
-                <div class="col-md-6">
+
+                    <div class="spacer"></div>
                     <h4>Combined vs BIRADS</h4>
                     <table class="table table-striped table-bordered table-middle">
                         <tr>
@@ -290,6 +282,36 @@
                           </td>
                         </tr>
                     </table>
+                </div>
+                <div class="col-md-6">
+                    <h4>ROC</h4>
+                    <div id="graph3" class="graph"></div>
+                    <table class="table table-striped table-bordered table-middle">
+                        <tr>
+                          <th class="shrink">Combined formula</th>
+                          <td><small id="formula"></small></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Approx<sup>*</sup> Dooley AUC</th>
+                          <td id="dooley-auc"></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Approx<sup>*</sup> BIRADS AUC</th>
+                          <td id="birads-auc"></td>
+                        </tr>
+                        <tr>
+                          <th class="shrink">Approx<sup>*</sup> Combined AUC</th>
+                          <td id="combined-auc"></td>
+                        </tr>
+                    </table>
+                    <small><i>* AUC calculated by DeLong method varies up to 5% from estimate</i></small>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                </div>
+                <div class="col-md-6">
                 </div>
             </div>
       </div>

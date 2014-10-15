@@ -25,6 +25,16 @@ $(function() {
             });
         });
 
+        // Formula for combining BIRAD+PE
+        $('#formula').text(
+            filterCombinedPos
+                .toString()
+                .replace(/function.*return |; *}/g,'')
+                .replace(/e.total/g, 'dooley')
+                .replace(/e.birads/g, 'birads')
+                .replace(/Math.max/g, 'max')
+                .replace(/\|\|/g, 'OR'))
+
         // Handlers for component checkboxes
         $('.ds-component').change(function() { refreshDooleyScore(); });
 
@@ -41,6 +51,7 @@ $(function() {
             ln = $('#ds-ln').is(':checked'),
             heme = $('#ds-heme').is(':checked'),
             ducts = $('#ds-ducts').is(':checked'),
+            hemeduct = $('#ds-hemeduct').is(':checked'),
             t4 = $('#ds-t4').is(':checked');
 
         var i, j, dataset, e;
@@ -52,6 +63,7 @@ $(function() {
                     (ln ? e['axillary lns'] || 0 : 0) +
                     (heme ? e['heme discharge'] || 0 : 0) +
                     (ducts ? e['ducts involved'] || 0 : 0) +
+                    (hemeduct ? e['heme discharge']>=1 && e['ducts involved']>=2 && 3 || 0 : 0) +
                     (t4 ? e['t4 findings'] && e['t4 findings'] || 0 : 0);
                 if (isNaN(e.total)) {
                     console.log(e);
@@ -73,20 +85,12 @@ $(function() {
                 subset = datasetByName(name);
             activedata = activedata.concat(subset.data);
         });
-        activedata = filterCancerDefined(activedata);
+        activedata = _.filter(activedata, filterCancerDefined);
         // activedata = _.filter(activedata, function(e) { return e['mass']==0; });
 
         // Calculate all stats
-        var cancer = filterCancer(activedata),
-            nocancer = filterNoCancer(activedata),
-            filterBiradsPos = function(e) { return (e.birads >= 4); },
-            filterBiradsNeg = function(e) { return (e.birads < 4); },
-            filterDooleyValid = function(e) { return _.isNumber(e.total); },
-            filterDooleyPos = function(e) { return (e.total >= threshold); },
-            filterDooleyNeg = function(e) { return (e.total < threshold); };
-            filterCombinedValid = function(e) { return _.isNumber(e.total) && _.isNumber(e.birads); },
-            filterCombinedPos = function(e) { return ((e.total >= threshold) || (e.birads >= Math.max(4, threshold))); },
-            filterCombinedNeg = function(e) { return ((e.total < threshold) && (e.birads < Math.max(4, threshold))); };
+        var cancer = _.filter(activedata, filterCancer),
+            nocancer = _.filter(activedata, filterNoCancer);
         for (threshold = 0; threshold <= 13; threshold++) {
             activestats[threshold] = {
                 dooley: calcStats(
@@ -146,8 +150,8 @@ $(function() {
 
         // Retrieve current stats
         var threshold = parseInt($('#threshold').val()),
-            cancer = filterCancer(activedata),
-            nocancer = filterNoCancer(activedata),
+            cancer = _.filter(activedata, filterCancer),
+            nocancer = _.filter(activedata, filterNoCancer),
             dooleyStats = activestats[threshold].dooley,
             biradsStats = activestats[threshold].birads,
             combinedStats = activestats[threshold].combined,
@@ -312,23 +316,25 @@ $(function() {
         graph = $('#graph3')[0];
         for (i = 0; i <= 13; i++) {
             dd1.push([(1-activestats[i].dooley.specificity/100).toFixed(2), activestats[i].dooley.sensitivity/100]);
-            dd2.push([(1-activestats[i].combined.specificity/100).toFixed(2), activestats[i].combined.sensitivity/100]);
+            dd3.push([(1-activestats[i].combined.specificity/100).toFixed(2), activestats[i].combined.sensitivity/100]);
         }
         for (i = 0; i <= 6; i++) {
-            dd3.push([(1-activestats['birads'+i].specificity/100).toFixed(2), activestats['birads'+i].sensitivity/100])
+            dd2.push([(1-activestats['birads'+i].specificity/100).toFixed(2), activestats['birads'+i].sensitivity/100])
         }
         if (parseFloat(dd1[dd1.length-1][0]) > 0) { dd1.push(["0.0","0.0"]); }
         if (parseFloat(dd1[0][0]) < 1) { dd1.unshift(["1.0","1.0"]); }
         if (parseFloat(dd2[dd2.length-1][0]) > 0) { dd2.push(["0.0","0.0"]); }
         if (parseFloat(dd2[0][0]) < 1) { dd2.unshift(["1.0","1.0"]); }
+        if (parseFloat(dd3[dd3.length-1][0]) > 0) { dd3.push(["0.0","0.0"]); }
+        if (parseFloat(dd3[0][0]) < 1) { dd3.unshift(["1.0","1.0"]); }
         Flotr.draw(graph, [
                 { data: dd1, label: '&nbsp;Dooley Score', lines: { show: true }, points: { show: true }},
-                { data: dd2, label: '&nbsp;Combined', lines: { show: true }, points: { show: true }},
-                { data: dd3, label: '&nbsp;BIRADS', lines: { show: true }, points: { show: true }},
+                { data: dd2, label: '&nbsp;BIRADS', lines: { show: true }, points: { show: true }},
+                { data: dd3, label: '&nbsp;Combined', lines: { show: true }, points: { show: true }},
                 { data: [[(1-activestats[threshold].dooley.specificity/100).toFixed(2), activestats[threshold].dooley.sensitivity/100]], points: { radius: 4, lineWidth: 8, show: true }},
                 { data: [[(1-activestats[threshold].combined.specificity/100).toFixed(2), activestats[threshold].combined.sensitivity/100]], points: { radius: 4, lineWidth: 8, show: true }},
             ], {
-                colors: ['#00A8F0', '#C0D800', '#663300', '#9440ED', '#9440ED'],
+                colors: ['#00A8F0', '#663300', '#C0D800', '#9440ED', '#9440ED'],
                 xaxis: {
                     title: '1 - Spec',
                     tickDecimals: 2,
@@ -354,6 +360,11 @@ $(function() {
                 }
             }
         );
+
+        // Update approximate AUC values
+        $('#dooley-auc').text(auc(dd1))
+        $('#birads-auc').text(auc(dd2))
+        $('#combined-auc').text(auc(dd3))
     }
 
     function datasetByName(name) {
@@ -363,6 +374,18 @@ $(function() {
             }
         }
         return null;
+    }
+
+    function auc(curve) {
+        var auc = 0;
+        for (i = 1; i < curve.length; i++) {
+            var dx = Math.abs(curve[i][0]-curve[i-1][0]),
+                dy = Math.abs(curve[i][1]-curve[i-1][1]),
+                y_min = Math.min(curve[i][1], curve[i-1][1]);
+            auc += dx*y_min;
+            auc += 0.5*dx*dy;
+        }
+        return auc.toFixed(2);
     }
 
     function calcStats(disease, noDisease, filterValidFun, filterTestPosFun, filterTestNegFun) {
@@ -615,9 +638,17 @@ $(function() {
     }
     // -----------------------------------------------------
 
-    function filterCancerDefined(data) { return _.filter(data, function(e) { return e.cancer.match(/yes|no/); }); }
-    function filterCancer(data) { return _.filter(data, function(e) { return e.cancer === 'yes'; }); }
-    function filterNoCancer(data) { return _.filter(data, function(e) { return e.cancer === 'no'; }); }
+    function filterCancerDefined(e) { return e.cancer.match(/yes|no/); }
+    function filterCancer(e) { return e.cancer === 'yes'; }
+    function filterNoCancer(e) { return e.cancer === 'no'; }
+    function filterBiradsPos(e) { return (e.birads >= 4); }
+    function filterBiradsNeg(e) { return (e.birads < 4); }
+    function filterDooleyValid(e) { return _.isNumber(e.total); }
+    function filterDooleyPos(e) { return (e.total >= threshold); }
+    function filterDooleyNeg(e) { return (e.total < threshold); }
+    function filterCombinedValid(e) { return _.isNumber(e.total) && _.isNumber(e.birads); }
+    function filterCombinedPos(e) { return (e.total >= threshold) || (e.total+e.birads >= threshold+2) || (e.birads >= Math.max(4, threshold)); }
+    function filterCombinedNeg(e) { return !filterCombinedPos(e); }
     function countByDooleyScore(data, score) { return _.filter(data, function(e) { return e.total == score; }).length; }
     function countByBIRADS(data, score) { return _.filter(data, function(e) { return _.isNumber(e.birads) && (e.birads === score); }).length; }
 
