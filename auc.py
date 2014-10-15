@@ -5,11 +5,34 @@ import re
 from pprint import pprint
 import numpy as np
 from sklearn import metrics
-from sklearn import metrics
+from rpy2 import robjects as ro
+import rpy2.interactive.packages as rpackages
+import rpy2.interactive
+pRoc = rpackages.importr("pROC")
 
-def dooleyScore(e): return (e['mass'] + e['axillary lns'] + e['heme discharge'] + e['ducts involved'] + e['t4 findings'])
+include = [
+    'Breast Mass',
+    'Breast Pain',
+    'Nipple Discharge',
+    'Abnormal Mammography',
+]
+
+def dooleyScore(e): 
+    if e['heme discharge']>=1 and e['ducts involved']>=2:
+        hemeduct = 4
+    # elif e['heme discharge']>=1 and e['ducts involved']==1:
+        # hemeduct = 2
+    else:
+        hemeduct = 0
+    return (e['mass']*2 + e['axillary lns'] + hemeduct + e['t4 findings'])
+# def dooleyScore(e): return (e['mass'] + e['axillary lns'] + e['heme discharge'] + e['ducts involved'] + e['t4 findings'])
 # def dooleyScore(e): return (e['mass'] + e['axillary lns'] + e['heme discharge'] + e['t4 findings'])
 # def dooleyScore(e): return (e['mass']*2 + e['axillary lns'] + e['heme discharge'] + e['t4 findings'])
+
+# def filterCombinedPos(threshold): 
+#     return lambda e: (float(e['total']) >= threshold) or (float(e['birads']) >= max(4, threshold))
+def filterCombinedPos(threshold): 
+    return lambda e: (float(e['total']) >= threshold) or (float(e['birads']) >= max(4, threshold)) or (float(e['total'])+float(e['birads']) >= threshold+2)
 
 def filterCancerDefined(data):
     return filter(lambda e: re.search('yes|no', e['birads']), data)
@@ -50,21 +73,17 @@ def calcStats(disease, noDisease, filterValidFun, filterTestPosFun, filterTestNe
     return (sensitivity, specificity, 'n=%d, sens=%.4f, spec=%.4f' % (a+b+c+d, sensitivity, specificity))
 
 def main():
-    include = [
-        'Breast Mass',
-        'Breast Pain',
-        'Nipple Discharge',
-        # 'Abnormal Mammography',
-    ]
     activedata = []
     with open('data.json', 'r') as f:
         source = json.loads(f.read())
         for _, dataset in source.items():
             name = dataset['name']
 
-            print('Processing dataset: %s' % name)
+            # print('Processing dataset: %s' % name)
             if name in include:
                 activedata += dataset['data']
+
+    activedata = list(filter(filterCancerDefined, activedata))
 
     for e in activedata:
         e['total'] = dooleyScore(e)
@@ -95,8 +114,8 @@ def main():
                     cancer,
                     nocancer,
                     filterCombinedValid,
-                    lambda e: ((float(e['total']) >= threshold) or (float(e['birads']) >= max(4, threshold))),
-                    lambda e: ((float(e['total']) < threshold) and (float(e['birads']) < max(4, threshold)))
+                    filterCombinedPos(threshold),
+                    lambda e: not filterCombinedPos(threshold)(e)
                 ))
         except ValueError as e:
             print(e)
@@ -117,24 +136,46 @@ def main():
             print(e)
     if biradsStats[-1][1] < 1: biradsStats.append((0,1))
 
-    print('Dooley Score:')
-    pprint([e[-1] for e in dooleyStats])
-    print('\nBIRADS:')
-    pprint([e[-1] for e in biradsStats])
-    print('\nCombined:')
-    pprint([e[-1] for e in combinedStats])
+    # Calculation with R
+    activedata = list(filter(filterCombinedValid, activedata))
+    y = [1 if e['cancer'] == 'yes' else 0 for e in activedata]
+    pred = [e['total'] for e in activedata]
+    pred2 = [e['birads'] for e in activedata]
+    pred3 = [e['total'] + e['birads'] for e in activedata]
+    y = tuple(y)
+    pred = tuple(pred)
+    y = ro.IntVector(y)
+    pred = ro.FloatVector(pred)
+    pred2 = ro.FloatVector(pred2)
+    pred3 = ro.FloatVector(pred3)
+    dooleyroc = pRoc.roc(y, pred)
+    biradsroc = pRoc.roc(y, pred2)
+    combinedroc = pRoc.roc(y, pred3)
+    print('Dooley Score vs BIRADS')
+    print(pRoc.roc_test(dooleyroc, biradsroc))
+    # print(pRoc.power_roc_test(dooleyroc, biradsroc))
+    print('Combined vs BIRADS')
+    print(pRoc.roc_test(combinedroc, biradsroc))
+    # print(pRoc.power_roc_test(combinedroc, biradsroc))
 
-    x = np.array([1-e[1] for e in dooleyStats])
-    y = np.array([e[0] for e in dooleyStats])
-    print('\nDooley Score ROC/AUC: %s' % metrics.auc(x, y))
+    # print('Dooley Score:')
+    # pprint([e[-1] for e in dooleyStats])
+    # print('\nBIRADS:')
+    # pprint([e[-1] for e in biradsStats])
+    # print('\nCombined:')
+    # pprint([e[-1] for e in combinedStats])
 
     x = np.array([1-e[1] for e in biradsStats])
     y = np.array([e[0] for e in biradsStats])
-    print('BIRADS ROC/AUC: %s' % metrics.auc(x, y))
+    print('BIRADS ROC/AUC: %.4f' % metrics.auc(x, y))
+
+    x = np.array([1-e[1] for e in dooleyStats])
+    y = np.array([e[0] for e in dooleyStats])
+    print('Dooley Score ROC/AUC: %.4f' % metrics.auc(x, y))
 
     x = np.array([1-e[1] for e in combinedStats])
     y = np.array([e[0] for e in combinedStats])
-    print('Combined ROC/AUC: %s' % metrics.auc(x, y))
+    print('Combined ROC/AUC: %.4f' % metrics.auc(x, y))
 
 
 if __name__ == '__main__':
