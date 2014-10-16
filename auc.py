@@ -1,5 +1,6 @@
 #!/usr/bin/env python -B
 
+import sys
 import json
 import re
 from pprint import pprint
@@ -14,7 +15,7 @@ include = [
     'Breast Mass',
     'Breast Pain',
     'Nipple Discharge',
-    'Abnormal Mammography',
+    # 'Abnormal Mammography',
 ]
 
 # def dooleyScore(e): 
@@ -73,7 +74,8 @@ def calcStats(disease, noDisease, filterValidFun, filterTestPosFun, filterTestNe
     return (sensitivity, specificity, 'n=%d, sens=%.4f, spec=%.4f' % (a+b+c+d, sensitivity, specificity))
 
 def main():
-    print('Datasets: %s' % include)
+    print('\nDatasets: %s' % include)
+    print('------------------------------------------------------------------------------------' % include)
 
     activedata = []
     with open('data.json', 'r') as f:
@@ -196,4 +198,7 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) >= 2:
+        if sys.argv[1] == '-m' and 'Abnormal Mammography' not in include:
+            include.append('Abnormal Mammography')
     main()
