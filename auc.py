@@ -14,7 +14,7 @@ include = [
     'Breast Mass',
     'Breast Pain',
     'Nipple Discharge',
-    # 'Abnormal Mammography',
+    'Abnormal Mammography',
 ]
 
 # def dooleyScore(e): 
@@ -73,6 +73,8 @@ def calcStats(disease, noDisease, filterValidFun, filterTestPosFun, filterTestNe
     return (sensitivity, specificity, 'n=%d, sens=%.4f, spec=%.4f' % (a+b+c+d, sensitivity, specificity))
 
 def main():
+    print('Datasets: %s' % include)
+
     activedata = []
     with open('data.json', 'r') as f:
         source = json.loads(f.read())
