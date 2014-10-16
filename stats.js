@@ -385,7 +385,7 @@ $(function() {
             auc += dx*y_min;
             auc += 0.5*dx*dy;
         }
-        return auc.toFixed(2);
+        return auc.toFixed(4);
     }
 
     function calcStats(disease, noDisease, filterValidFun, filterTestPosFun, filterTestNegFun) {
@@ -648,6 +648,7 @@ $(function() {
     function filterDooleyNeg(e) { return (e.total < threshold); }
     function filterCombinedValid(e) { return _.isNumber(e.total) && _.isNumber(e.birads); }
     function filterCombinedPos(e) { return (e.total >= threshold) || (e.total+e.birads >= threshold+2) || (e.birads >= Math.max(4, threshold)); }
+    // function filterCombinedPos(e) { return Math.max(e['birads'], e['total']+e['birads']-3) >= threshold; }
     function filterCombinedNeg(e) { return !filterCombinedPos(e); }
     function countByDooleyScore(data, score) { return _.filter(data, function(e) { return e.total == score; }).length; }
     function countByBIRADS(data, score) { return _.filter(data, function(e) { return _.isNumber(e.birads) && (e.birads === score); }).length; }
